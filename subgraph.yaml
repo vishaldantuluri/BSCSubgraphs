@@ -1,0 +1,44 @@
+specVersion: 0.0.1
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: NFT
+    network: bsc
+    source:
+      address: "0xF5db804101d8600c26598A1Ba465166c33CdAA4b"
+      abi: NFT
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.2
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - ApprovalForAll
+        - Minted
+        - NftListStatus
+        - OwnershipTransferred
+        - PriceUpdate
+        - Purchase
+        - Transfer
+      abis:
+        - name: NFT
+          file: ./abis/NFT.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: Minted(indexed address,uint256,uint256,string)
+          handler: handleMinted
+        - event: NftListStatus(indexed address,uint256,bool)
+          handler: handleNftListStatus
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: PriceUpdate(indexed address,uint256,uint256,uint256)
+          handler: handlePriceUpdate
+        - event: Purchase(indexed address,indexed address,uint256,uint256,string)
+          handler: handlePurchase
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/mapping.ts
