@@ -1,87 +1,146 @@
 import { BigInt } from "@graphprotocol/graph-ts"
 import {
   NFT,
-  Approval,
-  ApprovalForAll,
-  Minted,
-  NftListStatus,
-  OwnershipTransferred,
-  PriceUpdate,
-  Purchase,
-  Transfer
+ Transfer
 } from "../generated/NFT/NFT"
-import { ExampleEntity } from "../generated/schema"
+import {
+  ERC721Shared,
+  Transfer as BinanaceTransfer
+} from "../generated/ERC721SHARED/ERC721Shared"
+import {
+  MintMulTRSRNFT,
+  TransferSingle
+ } from "../generated/MintMulTRSRNFT/MintMulTRSRNFT"
+import { TokenInfo, TokenTransfer } from "../generated/schema"
 
-export function handleApproval(event: Approval): void {
-  // Entities can be loaded from the store using a string ID; this ID
-  // needs to be unique across all entities of the same type
-  let entity = ExampleEntity.load(event.transaction.from.toHex())
+export function handleTransfer(event: Transfer): void {
+  let tokenTransfer = new TokenTransfer(
+    event.transaction.hash.toHexString() + event.logIndex.toString()
+  );
+  tokenTransfer.from = event.params.from.toHexString();
+  tokenTransfer.to = event.params.to.toHexString();
+  tokenTransfer.transferredAt = event.block.timestamp;
+  tokenTransfer.tokenId = event.params.tokenId;
 
-  // Entities only exist after they have been saved to the store;
-  // `null` checks allow to create entities on demand
-  if (entity == null) {
-    entity = new ExampleEntity(event.transaction.from.toHex())
+  let tokenInfo = TokenInfo.load(
+    event.params.tokenId.toString() + event.address.toHexString()
+  );
 
-    // Entity fields can be set using simple assignments
-    entity.count = BigInt.fromI32(0)
+  if (!tokenInfo) {
+    tokenInfo = new TokenInfo(
+      event.params.tokenId.toString() + event.address.toHexString()
+    );
+    tokenInfo.contractAddress = event.address.toHexString();
+    tokenInfo.marketplace = "airNFT"
+    tokenInfo.creatorAddress = event.params.to.toHexString();
+    tokenInfo.blockNumber = event.block.number;
+    tokenInfo.mintTransactionHash = event.transaction.hash.toHexString();
+    tokenInfo.createdOn = event.block.timestamp;
+    tokenInfo.owner = event.params.to.toHexString();
+    tokenInfo.lastTransfer = event.block.timestamp;
+    tokenInfo.numberOfTransfers = 1;
+    //tokenInfo.transfers = [event.logIndex.toString()];
+    let tokenContract = NFT.bind(event.address);
+    let result = tokenContract.try_tokenURI(event.params.tokenId);
+    if (result.reverted) tokenInfo.tokenURI = "";
+    else tokenInfo.tokenURI = result.value;
+  } else {
+    tokenInfo.numberOfTransfers = tokenInfo.numberOfTransfers + 1;
+    tokenInfo.owner = event.params.to.toHexString();
+    tokenInfo.lastTransfer = event.block.timestamp;
+    tokenInfo.blockNumber = event.block.timestamp;
+    // tokenInfo.transfers.push(event.logIndex.toString());
   }
-
-  // BigInt and BigDecimal math are supported
-  entity.count = entity.count + BigInt.fromI32(1)
-
-  // Entity fields can be set based on event parameters
-  entity.owner = event.params.owner
-  entity.approved = event.params.approved
-
-  // Entities can be written to the store with `.save()`
-  entity.save()
-
-  // Note: If a handler doesn't require existing field values, it is faster
-  // _not_ to load the entity from the store. Instead, create it fresh with
-  // `new Entity(...)`, set the fields that should be updated and save the
-  // entity back to the store. Fields that were not set or unset remain
-  // unchanged, allowing for partial updates to be applied.
-
-  // It is also possible to access smart contracts from mappings. For
-  // example, the contract that has emitted the event can be connected to
-  // with:
-  //
-  // let contract = Contract.bind(event.address)
-  //
-  // The following functions can then be called on this contract to access
-  // state variables and other data:
-  //
-  // - contract._contractOwner(...)
-  // - contract.balanceOf(...)
-  // - contract.baseURI(...)
-  // - contract.getApproved(...)
-  // - contract.isApprovedForAll(...)
-  // - contract.listedMap(...)
-  // - contract.mint(...)
-  // - contract.name(...)
-  // - contract.owner(...)
-  // - contract.ownerOf(...)
-  // - contract.price(...)
-  // - contract.supportsInterface(...)
-  // - contract.symbol(...)
-  // - contract.tokenByIndex(...)
-  // - contract.tokenOfOwnerByIndex(...)
-  // - contract.tokenURI(...)
-  // - contract.totalSupply(...)
-  // - contract.updateListingStatus(...)
-  // - contract.updatePrice(...)
+  tokenTransfer.tokenInfo =
+    event.params.tokenId.toString() + event.address.toHexString();
+  tokenTransfer.save();
+  tokenInfo.save();
 }
 
-export function handleApprovalForAll(event: ApprovalForAll): void {}
+export function handleBinanceTransfer(event: BinanaceTransfer): void {
+  let tokenTransfer = new TokenTransfer(
+    event.transaction.hash.toHexString() + event.logIndex.toString()
+  );
+  tokenTransfer.from = event.params.from.toHexString();
+  tokenTransfer.to = event.params.to.toHexString();
+  tokenTransfer.transferredAt = event.block.timestamp;
+  tokenTransfer.tokenId = event.params.tokenId;
 
-export function handleMinted(event: Minted): void {}
+  let tokenInfo = TokenInfo.load(
+    event.params.tokenId.toString() + event.address.toHexString()
+  );
 
-export function handleNftListStatus(event: NftListStatus): void {}
+  if (!tokenInfo) {
+    tokenInfo = new TokenInfo(
+      event.params.tokenId.toString() + event.address.toHexString()
+    );
+    tokenInfo.contractAddress = event.address.toHexString();
+    tokenInfo.marketplace = "Binance"
+    tokenInfo.creatorAddress = event.params.to.toHexString();
+    tokenInfo.blockNumber = event.block.number;
+    tokenInfo.mintTransactionHash = event.transaction.hash.toHexString();
+    tokenInfo.createdOn = event.block.timestamp;
+    tokenInfo.owner = event.params.to.toHexString();
+    tokenInfo.lastTransfer = event.block.timestamp;
+    tokenInfo.numberOfTransfers = 1;
+    //tokenInfo.transfers = [event.logIndex.toString()];
+    let tokenContract = ERC721Shared.bind(event.address);
+    let result = tokenContract.try_tokenURI(event.params.tokenId);
+    if (result.reverted) tokenInfo.tokenURI = "";
+    else tokenInfo.tokenURI = result.value;
+  } else {
+    tokenInfo.numberOfTransfers = tokenInfo.numberOfTransfers + 1;
+    tokenInfo.owner = event.params.to.toHexString();
+    tokenInfo.lastTransfer = event.block.timestamp;
+    tokenInfo.blockNumber = event.block.timestamp;
+    // tokenInfo.transfers.push(event.logIndex.toString());
+  }
+  tokenTransfer.tokenInfo =
+    event.params.tokenId.toString() + event.address.toHexString();
+  tokenTransfer.save();
+  tokenInfo.save();
+}
 
-export function handleOwnershipTransferred(event: OwnershipTransferred): void {}
+export function handleTransferSingle(event: TransferSingle): void {
+  let tokenTransfer = new TokenTransfer(
+    event.transaction.hash.toHexString() + event.logIndex.toString()
+  );
+  tokenTransfer.from = event.params.from.toHexString();
+  tokenTransfer.to = event.params.to.toHexString();
+  tokenTransfer.transferredAt = event.block.timestamp;
+  tokenTransfer.tokenId = event.params.id
 
-export function handlePriceUpdate(event: PriceUpdate): void {}
+  let tokenInfo = TokenInfo.load(
+    event.params.id.toString() + event.address.toHexString()
+  );
 
-export function handlePurchase(event: Purchase): void {}
-
-export function handleTransfer(event: Transfer): void {}
+  if (!tokenInfo) {
+    tokenInfo = new TokenInfo(
+      event.params.id.toString() + event.address.toHexString()
+    );
+    tokenInfo.contractAddress = event.address.toHexString();
+    tokenInfo.marketplace = "Treasureland"
+    tokenInfo.creatorAddress = event.params.to.toHexString();
+    tokenInfo.blockNumber = event.block.number;
+    tokenInfo.mintTransactionHash = event.transaction.hash.toHexString();
+    tokenInfo.createdOn = event.block.timestamp;
+    tokenInfo.owner = event.params.to.toHexString();
+    tokenInfo.lastTransfer = event.block.timestamp;
+    tokenInfo.numberOfTransfers = 1;
+    //tokenInfo.transfers = [event.logIndex.toString()];
+    let tokenContract = MintMulTRSRNFT.bind(event.address);
+    let result = tokenContract.try_uri(event.params.id);
+    if (result.reverted) tokenInfo.tokenURI = "";
+    else tokenInfo.tokenURI = result.value;
+  } else {
+    tokenInfo.numberOfTransfers = tokenInfo.numberOfTransfers + 1;
+    tokenInfo.owner = event.params.to.toHexString();
+    tokenInfo.lastTransfer = event.block.timestamp;
+    tokenInfo.blockNumber = event.block.timestamp;
+    // tokenInfo.transfers.push(event.logIndex.toString());
+  }
+  tokenTransfer.tokenInfo =
+    event.params.id.toString() + event.address.toHexString();
+  tokenTransfer.save();
+  tokenInfo.save();
+}

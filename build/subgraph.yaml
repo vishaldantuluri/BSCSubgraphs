@@ -1,6 +1,6 @@
 specVersion: 0.0.2
 schema:
-  file: ./schema.graphql
+  file: schema.graphql
 dataSources:
   - kind: ethereum/contract
     name: NFT
@@ -18,11 +18,11 @@ dataSources:
         - TokenInfo
       abis:
         - name: NFT
-          file: ./abis/NFT.json
+          file: NFT\abis\NFT.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleTransfer
-      file: ./src/mapping.ts
+      file: NFT\NFT.wasm
   - kind: ethereum/contract
     name: ERC721Shared
     network: bsc
@@ -39,11 +39,11 @@ dataSources:
         - TokenInfo
       abis:
         - name: ERC721Shared
-          file: ./abis/ERC721Shared.json
+          file: ERC721Shared\abis\ERC721Shared.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleBinanceTransfer
-      file: ./src/mapping.ts
+      file: NFT\NFT.wasm
   - kind: ethereum/contract
     name: MintMulTRSRNFT
     network: bsc
@@ -60,8 +60,8 @@ dataSources:
         - TokenInfo
       abis:
         - name: MintMulTRSRNFT
-          file: ./abis/MintMulTRSRNFT.json
+          file: MintMulTRSRNFT\abis\MintMulTRSRNFT.json
       eventHandlers:
         - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleTransferSingle
-      file: ./src/mapping.ts
+      file: NFT\NFT.wasm
