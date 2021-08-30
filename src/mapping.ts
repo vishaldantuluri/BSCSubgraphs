@@ -11,7 +11,7 @@ import {
   MintMulTRSRNFT,
   TransferSingle
  } from "../generated/MintMulTRSRNFT/MintMulTRSRNFT"
-import { TokenInfo, TokenTransfer } from "../generated/schema"
+import { TokenInfo, TokenTransfer, CreatorInfo } from "../generated/schema"
 
 export function handleTransfer(event: Transfer): void {
   let tokenTransfer = new TokenTransfer(
@@ -44,6 +44,16 @@ export function handleTransfer(event: Transfer): void {
     let result = tokenContract.try_tokenURI(event.params.tokenId);
     if (result.reverted) tokenInfo.tokenURI = "";
     else tokenInfo.tokenURI = result.value;
+    let creatorInfo = CreatorInfo.load(event.params.to.toHexString());
+    if(!creatorInfo){
+      creatorInfo = new CreatorInfo(event.params.to.toHexString());
+      creatorInfo.address = event.params.to.toHexString();
+      creatorInfo.numberOfCreations = 1;
+    } else {
+      creatorInfo.numberOfCreations = creatorInfo.numberOfCreations + 1;
+    }
+    tokenInfo.creatorInfo = tokenInfo.creatorAddress;
+    creatorInfo.save();
   } else {
     tokenInfo.numberOfTransfers = tokenInfo.numberOfTransfers + 1;
     tokenInfo.owner = event.params.to.toHexString();
@@ -88,6 +98,16 @@ export function handleBinanceTransfer(event: BinanaceTransfer): void {
     let result = tokenContract.try_tokenURI(event.params.tokenId);
     if (result.reverted) tokenInfo.tokenURI = "";
     else tokenInfo.tokenURI = result.value;
+    let creatorInfo = CreatorInfo.load(event.params.to.toHexString());
+    if(!creatorInfo){
+      creatorInfo = new CreatorInfo(event.params.to.toHexString())
+      creatorInfo.address = event.params.to.toHexString();
+      creatorInfo.numberOfCreations = 1;
+    } else {
+      creatorInfo.numberOfCreations = creatorInfo.numberOfCreations + 1;
+    }
+    tokenInfo.creatorInfo = tokenInfo.creatorAddress;
+    creatorInfo.save();
   } else {
     tokenInfo.numberOfTransfers = tokenInfo.numberOfTransfers + 1;
     tokenInfo.owner = event.params.to.toHexString();
@@ -132,6 +152,16 @@ export function handleTransferSingle(event: TransferSingle): void {
     let result = tokenContract.try_uri(event.params.id);
     if (result.reverted) tokenInfo.tokenURI = "";
     else tokenInfo.tokenURI = result.value;
+    let creatorInfo = CreatorInfo.load(event.params.to.toHexString());
+    if(!creatorInfo){
+      creatorInfo = new CreatorInfo(event.params.to.toHexString())
+      creatorInfo.address = event.params.to.toHexString();
+      creatorInfo.numberOfCreations = 1;
+    } else {
+      creatorInfo.numberOfCreations = creatorInfo.numberOfCreations + 1;
+    }
+    tokenInfo.creatorInfo = tokenInfo.creatorAddress;
+    creatorInfo.save();
   } else {
     tokenInfo.numberOfTransfers = tokenInfo.numberOfTransfers + 1;
     tokenInfo.owner = event.params.to.toHexString();

@@ -22,5 +22,13 @@ type TokenInfo @entity {
   lastTransfer: BigInt!
   numberOfTransfers: Int!
   tokenURI: String!
+  creatorInfo: CreatorInfo!
   transfers: [TokenTransfer!]! @derivedFrom(field: "tokenInfo")
+}
+
+type CreatorInfo @entity {
+  id: ID!
+  address: String!
+  numberOfCreations: Int!
+  creations: [TokenInfo!]! @derivedFrom(field: "creatorInfo")
 }

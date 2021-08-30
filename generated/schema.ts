@@ -208,6 +208,15 @@ export class TokenInfo extends Entity {
     this.set("tokenURI", Value.fromString(value));
   }
 
+  get creatorInfo(): string {
+    let value = this.get("creatorInfo");
+    return value.toString();
+  }
+
+  set creatorInfo(value: string) {
+    this.set("creatorInfo", Value.fromString(value));
+  }
+
   get transfers(): Array<string> {
     let value = this.get("transfers");
     return value.toStringArray();
@@ -215,5 +224,63 @@ export class TokenInfo extends Entity {
 
   set transfers(value: Array<string>) {
     this.set("transfers", Value.fromStringArray(value));
+  }
+}
+
+export class CreatorInfo extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id !== null, "Cannot save CreatorInfo entity without an ID");
+    assert(
+      id.kind == ValueKind.STRING,
+      "Cannot save CreatorInfo entity with non-string ID. " +
+        'Considering using .toHex() to convert the "id" to a string.'
+    );
+    store.set("CreatorInfo", id.toString(), this);
+  }
+
+  static load(id: string): CreatorInfo | null {
+    return store.get("CreatorInfo", id) as CreatorInfo | null;
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get address(): string {
+    let value = this.get("address");
+    return value.toString();
+  }
+
+  set address(value: string) {
+    this.set("address", Value.fromString(value));
+  }
+
+  get numberOfCreations(): i32 {
+    let value = this.get("numberOfCreations");
+    return value.toI32();
+  }
+
+  set numberOfCreations(value: i32) {
+    this.set("numberOfCreations", Value.fromI32(value));
+  }
+
+  get creations(): Array<string> {
+    let value = this.get("creations");
+    return value.toStringArray();
+  }
+
+  set creations(value: Array<string>) {
+    this.set("creations", Value.fromStringArray(value));
   }
 }
